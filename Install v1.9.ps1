@@ -850,14 +850,16 @@ if (!(Test-RebootRequired))
                 foreach ($INFDir in $InfDirs)
                 {
                     write-log -Message "[Driver Install] Getting the drivers in the folder: ""$($dirInstallFiles)\$($InfDir)""" -Severity Information
-                    $CATPaths = get-ChildItem "$($dirInstallFiles)\$($InfDir)" -Recurse -Filter "*inf"
+                    $CATPaths = get-ChildItem "$($dirInstallFiles)\$($InfDir)" -Recurse -Filter "*cat"
                     ForEach($CATPath in $CATPaths) {
                     #import driver signature and install driver
                         $signature = Get-AuthenticodeSignature $CATPath.FullName
-                        $store = Get-Item -Path Cert:\LocalMachine\TrustedPublisher
-                        $store.Open("ReadWrite")
-                        $store.Add($signature.SignerCertificate)
-                        $store.Close()
+			if ($signature.Status -ne "UnknownError"){
+                        	$store = Get-Item -Path Cert:\LocalMachine\TrustedPublisher
+                        	$store.Open("ReadWrite")
+                        	$store.Add($signature.SignerCertificate)
+                        	$store.Close()
+			}
                     }
                     
                     $INFPaths = get-ChildItem "$($dirInstallFiles)\$($InfDir)" -Recurse -Filter "*inf"
